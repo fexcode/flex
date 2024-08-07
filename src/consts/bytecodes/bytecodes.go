@@ -1,4 +1,11 @@
-package code2bytecode
+package consts_bytecodes
+
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+)
 
 // Opcode 定义了字节码的操作类型
 type Opcode int
@@ -30,17 +37,11 @@ CALL_FUNCTION - 调用一个函数。
 RETURN_VALUE - 从当前函数返回堆栈顶部的值。
 */
 const (
-	LOAD_VALUE = iota
+	NO_ARG = iota // 这不是一个有效的操作码，用于表示无操作数
+	LOAD_VALUE
 	STORE_NAME
 	LOAD_NAME
-	ADD
-	SUB
-	MUL
-	DIV
-	JUMP
-	JUMP_IF_FALSE
-	CALL_FUNCTION
-	RETURN_VALUE
+	POP_TOP
 )
 
 // NewBytecode 创建一个新的Bytecode实例
@@ -59,6 +60,35 @@ func NewBytecode(opcode Opcode, operand interface{}) Bytecode {
 	}
 }
 
+func ParseLineBytecode(line string) Bytecode { //(Bytecode, error)
+	// TODO: 解析字节码指令
+	fmt.Println("生成了字节码: ", line)
+	return NewBytecode(NO_ARG, 0)
+}
+
+func ParseBytecodeFromString(str string) ([]Bytecode, error) {
+	bytecodes := make([]Bytecode, 0)
+
+	// 使用strings.NewReader将字符串转换为io.Reader接口
+	reader := strings.NewReader(str)
+
+	// 创建bufio.Scanner来按行扫描
+	scanner := bufio.NewScanner(reader)
+
+	// 使用Scan方法按行遍历
+	for scanner.Scan() {
+		line := scanner.Text() // 获取当前行
+		bytecodes = append(bytecodes, ParseLineBytecode(line))
+
+	}
+
+	// 检查遍历过程中是否有错误发生
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+	return bytecodes, nil
+}
+
 // 字节码常量转换为字节码指令字符串
 func Bytecode2String(opcode Opcode) string {
 	switch opcode {
@@ -71,29 +101,8 @@ func Bytecode2String(opcode Opcode) string {
 	case LOAD_NAME:
 		return "LOAD_NAME"
 
-	case ADD:
-		return "ADD"
-
-	case SUB:
-		return "SUB"
-
-	case MUL:
-		return "MUL"
-
-	case DIV:
-		return "DIV"
-
-	case JUMP:
-		return "JUMP"
-
-	case JUMP_IF_FALSE:
-		return "JUMP_IF_FALSE"
-
-	case CALL_FUNCTION:
-		return "CALL_FUNCTION"
-
-	case RETURN_VALUE:
-		return "RETURN_VALUE"
+	case POP_TOP:
+		return "POP_TOP"
 
 	default:
 		return "Unknown Opcode"
